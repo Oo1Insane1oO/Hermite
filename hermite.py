@@ -88,7 +88,7 @@ def turnCoeffsToCPP(coeffs, funcName):
     """ turn coefficients to lists in template function """
     codes = []
     for n,c in enumerate(coeffs):
-        s = "   std::vector<int> coeffs = std::vector<int>{"
+        s = "   std::vector<long int> coeffs = std::vector<long int>{"
         for i in range(len(c)):
             """ create string with vector of coefficients """
             if (i==len(c)-1):
@@ -97,7 +97,7 @@ def turnCoeffsToCPP(coeffs, funcName):
                 s += "%i," % c[i]
             # end ifelse
         # end fori
-        codes.append('''static std::vector<int> ''' + funcName + '''%i() {\n ''' % n + s + '''\n    return coeffs;\n}''')
+        codes.append('''static std::vector<long int> ''' + funcName + '''%i() {\n ''' % n + s + '''\n    return coeffs;\n}''')
     return codes
 # end function turnCoeffsToCPP
 
@@ -126,14 +126,14 @@ def appendCoeffsToFile(codes, fname, funcName, o="w+"):
     with open(fname, o) as ofile:
         for c in codes:
             ofile.write(c+"\n")
-        ofile.write("static std::vector<int> " + funcName + "(int n) {\n")
+        ofile.write("static std::vector<long int> " + funcName + "(int n) {\n")
         ofile.write("   if (n > %i) {\n" % (len(codes)-1))
-        ofile.write("       return std::vector<int>{-1};\n")
+        ofile.write("       return std::vector<long int>{-1};\n")
         ofile.write("   }\n")
         ofile.write("   switch(n) {\n")
         for i in range(len(codes)):
             ofile.write(("       case %i: return " + funcName + "%i();\n") % (i,i))
-        ofile.write("       default: return std::vector<int>{0};\n")
+        ofile.write("       default: return std::vector<long int>{0};\n")
         ofile.write("   }\n}\n")
         # end forc
     # end ofile
@@ -162,7 +162,9 @@ if __name__ == "__main__":
     with open(filename, "w+") as ofile:
         hname = filename.replace(".h", "_H").upper()
         ofile.write("#ifndef " + hname + "\n")
-        ofile.write("#define " + hname + "\n")
+        ofile.write("#define " + hname + "\n\n")
+        ofile.write("#include <vector>\n")
+        ofile.write("#include <cmath>\n\n")
     # end with open
     appendCoeffsToFile(coeffCodes, filename, "HC", "a")
     appendToFile(Hcodes,filename,"H", "a")
