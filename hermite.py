@@ -1,6 +1,6 @@
-##############################################################################
-## Script for generating hermite polynomials upto order n (with H_0=1)      ##
-##############################################################################
+########################################################################
+## Script for generating hermite polynomials upto order n (with H_0=1) #
+########################################################################
 
 import math
 import sys
@@ -148,11 +148,15 @@ if __name__ == "__main__":
         raise IndexError
     # end try-except
 
-
     x = sp.symbols('x')
-    Hcodes = [turnToCPP(i,sp.powsimp(sp.simplify(hermite(x,i))), "H") for i in range(n+1)]
-    Hdercodes = [turnToCPP(i,sp.powsimp(sp.simplify(hermiteDerivative(x,i))), "dH") for i in range(n+1)]
-    Hderdercodes = [turnToCPP(i,sp.powsimp(sp.simplify(hermiteDerivative(x,i,m=2))), "ddH") for i in range(n+1)]
+    Hlist = [hermite(x,0), hermite(x,1)]
+    for i in range(2, n+1):
+        Hlist.append(2*(x*Hlist[i-1] - (i-1)*Hlist[i-2]));
+    # endif
+
+    Hcodes = [turnToCPP(i,sp.powsimp(sp.simplify(Hlist[i])), "H") for i in range(n+1)]
+#     Hdercodes = [turnToCPP(i,sp.powsimp(sp.simplify(sp.diff(Hlist[i],x,1))), "dH") for i in range(n+1)]
+#     Hderdercodes = [turnToCPP(i,sp.powsimp(sp.simplify(sp.diff(Hlist[i],x,2))), "ddH") for i in range(n+1)]
     coeffCodes = turnCoeffsToCPP(hermiteCoefficients(n+1), "HC")
 
     with open(filename, "w+") as ofile:
@@ -162,8 +166,8 @@ if __name__ == "__main__":
     # end with open
     appendCoeffsToFile(coeffCodes, filename, "HC", "a")
     appendToFile(Hcodes,filename,"H", "a")
-    appendToFile(Hdercodes,filename,"dH","a")
-    appendToFile(Hderdercodes,filename,"ddH","a")
+#     appendToFile(Hdercodes,filename,"dH","a")
+#     appendToFile(Hderdercodes,filename,"ddH","a")
     with open(filename, "a") as ofile:
         ofile.write("#endif /* " + hname + " */\n")
     # end withopen
