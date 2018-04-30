@@ -80,7 +80,7 @@ def usage():
 
 def turnToCPP(n,H,funcName):
     """ turn hermite polynomial H of degree n into C++ template function """
-    return ''' template<typename T> static T ''' + funcName + '''%(n)i(T x) {return %(expr)s;}''' % (
+    return ''' template<typename T> static T ''' + funcName + '''%(n)i(const T& x) {return %(expr)s;}''' % (
             {'n':n, 'expr':sp.printing.ccode(H)})
 # end functtion turnToCPP
 
@@ -110,7 +110,7 @@ def appendToFile(codes, fname, funcName, o="w+"):
             ofile.write(c+"\n")
         # end for c
         ofile.write("#pragma GCC diagnostic pop\n")
-        ofile.write("template<typename T> static T " + funcName + "(T x, int n) {\n")
+        ofile.write("template<typename T> static T " + funcName + "(const T& x, const int& n) {\n")
         ofile.write("   if (n > %i) {\n" % (len(codes)-1))
         ofile.write("       return -1;\n")
         ofile.write("   }\n")
@@ -126,7 +126,7 @@ def appendCoeffsToFile(codes, fname, funcName, o="w+"):
     with open(fname, o) as ofile:
         for c in codes:
             ofile.write(c+"\n")
-        ofile.write("static std::vector<long int> " + funcName + "(int n) {\n")
+        ofile.write("static std::vector<long int> " + funcName + "(const int& n) {\n")
         ofile.write("   if (n > %i) {\n" % (len(codes)-1))
         ofile.write("       return std::vector<long int>{-1};\n")
         ofile.write("   }\n")
