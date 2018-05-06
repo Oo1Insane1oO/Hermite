@@ -124,21 +124,41 @@ def appendToFile(codes, fname, funcName, o="w+"):
     # end ofile
 # end function appendToFile
 
-def appendCoeffsToFile(codes, fname, funcName, o="w+"):
+def appendCoeffsToFile(coeffs, fname, funcName, o="w+"):
     with open(fname, o) as ofile:
-#         for c in codes:
-#             ofile.write(c+"\n")
-        ofile.write("static std::vector<long int> " + funcName + "(const int& n) {\n")
-#         ofile.write("   if (n > %i) {\n" % (len(codes)-1))
-#         ofile.write("       return std::vector<long int>{-1};\n")
-#         ofile.write("   }\n")
-        ofile.write("   switch(n) {\n")
-        for i in range(len(codes)):
-#             ofile.write(("       case %i: return " + funcName + "%i();\n") % (i,i))
-            ofile.write(("       case %i: return " % i + codes[i] + "\n"))
-        ofile.write("       default: return std::vector<long int>{0};\n")
-        ofile.write("   }\n}\n")
+        sizes = [0]
+        totalsize = sum(len(c) for c in coeffs)
+        for i in range(0,len(coeffs)-1):
+            sizes.append(sizes[i] + len(coeffs[i]))
+        # end fori
+        ofile.write("struct HC {\n"
+                    "   private:\n"
+                    "      static constexpr std::array<long int, %i> coeffs = "
+                    "{\n" % totalsize)
+        for c in range(len(coeffs)):
+            for s in range(len(coeffs[c])):
+                if ((s == len(coeffs[c])-1) and (c == len(coeffs)-1)):
+                    ofile.write("%i" % coeffs[c][s])
+                else:
+                    ofile.write("%i," % coeffs[c][s])
+            # fors
+            ofile.write("           \n")
         # end forc
+        ofile.write("       };\n")
+        ofile.write("       static constexpr std::array<unsigned int, %i> "
+                "displ = {" % len(coeffs))
+        for c in range(len(coeffs)):
+            if c != (len(coeffs)-1):
+                ofile.write(str(sizes[c]) + ",")
+            else:
+                ofile.write(str(sizes[c]) + "};\n")
+            # end ifelse
+        # end forc
+        ofile.write("\n     public:\n")
+        ofile.write("           static constexpr long int coeff(unsigned int n, unsigned "
+                    "int i) {\n"
+                    "               return coeffs[displ[n] + i];\n"
+                    "           }\n};\n\n")
     # end ofile
 # end function appendCoeffsToFile
 
@@ -167,9 +187,10 @@ if __name__ == "__main__":
         ofile.write("#ifndef " + hname + "\n")
         ofile.write("#define " + hname + "\n\n")
         ofile.write("#include <vector>\n")
-        ofile.write("#include <cmath>\n\n")
+        ofile.write("#include <cmath>\n")
+        ofile.write("#include <array>\n\n")
     # end with open
-    appendCoeffsToFile(coeffCodes, filename, "HC", "a")
+    appendCoeffsToFile(hermiteCoefficients(n+1), filename, "HC", "a")
     appendToFile(Hcodes,filename,"H", "a")
 #     appendToFile(Hdercodes,filename,"dH","a")
 #     appendToFile(Hderdercodes,filename,"ddH","a")
